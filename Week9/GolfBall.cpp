@@ -64,3 +64,8 @@ void AGolfBall::Tick(float DeltaTime)
 
 }
 
+void AGolfBall::Setup(FVector& Direction, float Speed)
+{
+	ProjectileMovementComponent->Velocity = Direction * (ProjectileMovementComponent->InitialSpeed + Speed);
+}
+

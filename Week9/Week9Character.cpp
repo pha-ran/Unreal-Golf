@@ -52,11 +52,23 @@ AWeek9Character::AWeek9Character()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
-	//발사체 클래스 초기화
+	// 발사체 클래스 초기화
 	ProjectileClass = AGolfBall::StaticClass();
-	//발사 속도 초기화
+
+	// 스윙 딜레이 초기화
 	SwingRate = 1.0f;
 	bIsSwung = false;
+
+	// 생성 위치 초기화
+	SpawnPosition = FVector(0.0f, 100.0f, -100.0f);
+
+	// 세로 각도 초기화
+	Angle = 0.0f;
+	DeltaAngle = 2.5f;
+
+	// 속도 초기화
+	Speed = 0.0f;
+	DeltaSpeed = 100.0f;
 }
 
 void AWeek9Character::BeginPlay()
@@ -83,7 +95,7 @@ void AWeek9Character::StartSwing()
 		UWorld* World = GetWorld();
 		World->GetTimerManager().SetTimer(SwingTimer, this, &AWeek9Character::StopSwing, SwingRate, false);
 
-		SpawnProjectile();
+		SpawnProjectile(Angle, Speed);
 	}
 }
 
@@ -92,16 +104,30 @@ void AWeek9Character::StopSwing()
 	bIsSwung = false;
 }
 
-void AWeek9Character::SpawnProjectile_Implementation()
+void AWeek9Character::SpawnProjectile_Implementation(double _Angle, float _Speed)
 {
-	FVector spawnLocation = GetActorLocation() + (GetActorRotation().Vector() * 100.0f) + (GetActorUpVector() * 50.0f);
-	FRotator spawnRotation = GetActorRotation();
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	GetActorEyesViewPoint(CameraLocation, CameraRotation);
+
+	FVector spawnLocation = CameraLocation + FTransform(CameraRotation).TransformVector(SpawnPosition);
+	FRotator spawnRotation = CameraRotation;
+
+	spawnRotation.Pitch += _Angle;
 
 	FActorSpawnParameters spawnParameters;
 	spawnParameters.Instigator = GetInstigator();
 	spawnParameters.Owner = this;
 
 	AGolfBall* spawnedProjectile = GetWorld()->SpawnActor<AGolfBall>(spawnLocation, spawnRotation, spawnParameters);
+
+	if (spawnedProjectile)
+	{
+		FVector Direction = spawnRotation.Vector();
+		spawnedProjectile->Setup(Direction, _Speed);
+
+		UE_LOG(LogTemp, Display, TEXT("Angle %f / Speed %f"), _Angle, _Speed);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -175,7 +201,7 @@ void AWeek9Character::Look(const FInputActionValue& Value)
 	{
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+		//AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
 
@@ -205,7 +231,14 @@ void AWeek9Character::AngleUp(const FInputActionValue& Value)
 
 	if (IsPress)
 	{
-		UE_LOG(LogTemp, Display, TEXT("#################### AngleUp ####################"));
+		if (Angle <= 45)
+		{
+			Angle += DeltaAngle;
+		}
+		else
+		{
+			Angle = 80.0f;
+		}
 	}
 }
 
@@ -215,7 +248,14 @@ void AWeek9Character::AngleDown(const FInputActionValue& Value)
 
 	if (IsPress)
 	{
-		UE_LOG(LogTemp, Display, TEXT("#################### AngleDown ####################"));
+		if (Angle >= 0)
+		{
+			Angle -= DeltaAngle;
+		}
+		else
+		{
+			Angle = 0.0f;
+		}
 	}
 }
 
@@ -225,7 +265,14 @@ void AWeek9Character::SpeedUp(const FInputActionValue& Value)
 
 	if (IsPress)
 	{
-		UE_LOG(LogTemp, Display, TEXT("#################### SpeedUp ####################"));
+		if (Speed <= 3000)
+		{
+			Speed += DeltaSpeed;
+		}
+		else
+		{
+			Speed = 3000.0f;
+		}
 	}
 }
 
@@ -235,7 +282,14 @@ void AWeek9Character::SpeedDown(const FInputActionValue& Value)
 
 	if (IsPress)
 	{
-		UE_LOG(LogTemp, Display, TEXT("#################### SpeedDown ####################"));
+		if (Speed >= 0)
+		{
+			Speed -= DeltaSpeed;
+		}
+		else
+		{
+			Speed = 0.0f;
+		}
 	}
 }
 

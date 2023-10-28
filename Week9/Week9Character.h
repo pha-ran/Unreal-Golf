@@ -127,10 +127,30 @@ protected:
 
 	/** 발사체를 스폰하는 서버 함수 */
 	UFUNCTION(Server, Reliable)
-	void SpawnProjectile();
+	void SpawnProjectile(double _Angle, float _Speed);
 
 	/** 스폰 사이에 스윙 딜레이를 넣는 타이머 핸들 */
 	FTimerHandle SwingTimer;
+
+	/** 생성 위치 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	FVector SpawnPosition;
+
+	// 세로 각도 저장
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	double Angle;
+
+	// 세로 각도 변화량 저장
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	double DeltaAngle;
+
+	// 스윙 속도 저장
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Gameplay)
+	float Speed;
+
+	// 스윙 속도 변화량 저장
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Gameplay)
+	float DeltaSpeed;
 
 };
 
