@@ -21,10 +21,57 @@ AWeek9PlayerController::AWeek9PlayerController()
 void AWeek9PlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	if (!HasAuthority() && MyPawn != nullptr && MyGameState != nullptr && ClientUserWidget != nullptr)
+	{
+		AWeek9PlayerState* WPS = Cast<AWeek9PlayerState>(PlayerState);
+
+		if (WPS != nullptr)
+		{
+			ClientUserWidget->SetMyNameText(WPS->GetPlayerName());
+		}
+
+		ClientUserWidget->SetMyAngleText(MyPawn->GetAngle());
+		ClientUserWidget->SetMySpeedText(MyPawn->GetSpeed());
+
+		ClientUserWidget->SetCurrentTurnText(MyGameState->GetCurrentTurn());
+		
+		MyPlayerArray = MyGameState->PlayerArray;
+
+		int Index = 0;
+
+		for (APlayerState* MyPlayer : MyPlayerArray)
+		{
+			WPS = Cast<AWeek9PlayerState>(MyPlayer);
+
+			if (WPS != nullptr && WPS->GetPlayerTurn() > 0)
+			{
+				if (Index == 0)
+				{
+					ClientUserWidget->SetPlayer1Text(WPS->GetPlayerTurn(), WPS->GetPlayerName());
+				}
+				else if (Index == 1)
+				{
+					ClientUserWidget->SetPlayer2Text(WPS->GetPlayerTurn(), WPS->GetPlayerName());
+				}
+				else if (Index == 2)
+				{
+					ClientUserWidget->SetPlayer3Text(WPS->GetPlayerTurn(), WPS->GetPlayerName());
+				}
+				else if (Index == 3)
+				{
+					ClientUserWidget->SetPlayer4Text(WPS->GetPlayerTurn(), WPS->GetPlayerName());
+				}
+
+				Index++;
+			}
+		}
+	}
 }
 
 void AWeek9PlayerController::BeginPlay()
 {
+	MyPawn = Cast<AWeek9Character>(GetPawn());
 	MyGameState = Cast<AWeek9GameState>(GetWorld()->GetGameState());
 
 	if (!HasAuthority())

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Week9GameState.h"
+#include "Week9Character.h"
 #include "Week9PlayerController.generated.h"
 
 UCLASS()
@@ -17,10 +18,6 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	AWeek9GameState* MyGameState;
-
-	TArray<APlayerState*> MyPlayerArray;
-
 protected:
 	virtual void BeginPlay() override;
 
@@ -28,4 +25,9 @@ protected:
 
 	class UClientUserWidget* ClientUserWidget;
 
+	AWeek9Character* MyPawn;
+
+	AWeek9GameState* MyGameState;
+
+	TArray<APlayerState*> MyPlayerArray;
 };

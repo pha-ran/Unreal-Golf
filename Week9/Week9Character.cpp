@@ -9,6 +9,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "GolfBall.h"
+#include "Week9GameMode.h"
+#include "Week9PlayerState.h"
+#include "Week9GameState.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
@@ -69,6 +72,9 @@ AWeek9Character::AWeek9Character()
 	// 속도 초기화
 	Speed = 0.0f;
 	DeltaSpeed = 100.0f;
+
+	// 입력 초기화
+	IgnoreInputAll = true;
 }
 
 void AWeek9Character::BeginPlay()
@@ -104,6 +110,53 @@ void AWeek9Character::StopSwing()
 	bIsSwung = false;
 }
 
+void AWeek9Character::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AWeek9Character, IgnoreInputAll);
+}
+
+void AWeek9Character::ServerNextTurn_Implementation()
+{
+	if (HasAuthority())
+	{
+		MulticastNextTurn();
+	}
+}
+
+void AWeek9Character::MulticastNextTurn_Implementation()
+{
+	if (HasAuthority())
+	{
+		UWorld* MyWorld = GetWorld();
+
+		if (MyWorld != nullptr)
+		{
+			AWeek9GameMode* MyGameMode = Cast<AWeek9GameMode>(MyWorld->GetAuthGameMode());
+			AWeek9PlayerState* WPS = Cast<AWeek9PlayerState>(Controller->PlayerState);
+
+			if (MyGameMode != nullptr && WPS != nullptr)
+			{
+				AWeek9GameState* GameState = Cast<AWeek9GameState>(MyWorld->GetGameState());
+
+				if (GameState != nullptr)
+				{
+					if (GameState->GetCurrentTurn() == WPS->GetPlayerTurn())
+					{
+						MyGameMode->NextTurn();
+					}
+				}
+			}
+		}
+	}
+}
+
+void AWeek9Character::SetIgnoreInputAll(bool _Ignore)
+{
+	IgnoreInputAll = _Ignore;
+}
+
 void AWeek9Character::SpawnProjectile_Implementation(double _Angle, float _Speed)
 {
 	FVector CameraLocation;
@@ -126,7 +179,7 @@ void AWeek9Character::SpawnProjectile_Implementation(double _Angle, float _Speed
 		FVector Direction = spawnRotation.Vector();
 		spawnedProjectile->Setup(Direction, _Speed);
 
-		UE_LOG(LogTemp, Display, TEXT("Angle %f / Speed %f"), _Angle, _Speed);
+		ServerNextTurn();
 	}
 }
 
@@ -171,6 +224,11 @@ void AWeek9Character::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 
 void AWeek9Character::Move(const FInputActionValue& Value)
 {
+	if (IgnoreInputAll)
+	{
+		return;
+	}
+
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -207,6 +265,11 @@ void AWeek9Character::Look(const FInputActionValue& Value)
 
 void AWeek9Character::Swing(const FInputActionValue& Value)
 {
+	if (IgnoreInputAll)
+	{
+		return;
+	}
+
 	bool IsPress = Value.Get<bool>();
 
 	if (IsPress)
@@ -217,6 +280,11 @@ void AWeek9Character::Swing(const FInputActionValue& Value)
 
 void AWeek9Character::Path(const FInputActionValue& Value)
 {
+	if (IgnoreInputAll)
+	{
+		return;
+	}
+
 	bool IsPress = Value.Get<bool>();
 
 	if (IsPress)
@@ -227,28 +295,38 @@ void AWeek9Character::Path(const FInputActionValue& Value)
 
 void AWeek9Character::AngleUp(const FInputActionValue& Value)
 {
+	if (IgnoreInputAll)
+	{
+		return;
+	}
+
 	bool IsPress = Value.Get<bool>();
 
 	if (IsPress)
 	{
-		if (Angle <= 45)
+		if (Angle < 60)
 		{
 			Angle += DeltaAngle;
 		}
 		else
 		{
-			Angle = 80.0f;
+			Angle = 60.0f;
 		}
 	}
 }
 
 void AWeek9Character::AngleDown(const FInputActionValue& Value)
 {
+	if (IgnoreInputAll)
+	{
+		return;
+	}
+
 	bool IsPress = Value.Get<bool>();
 
 	if (IsPress)
 	{
-		if (Angle >= 0)
+		if (Angle > 0)
 		{
 			Angle -= DeltaAngle;
 		}
@@ -261,11 +339,16 @@ void AWeek9Character::AngleDown(const FInputActionValue& Value)
 
 void AWeek9Character::SpeedUp(const FInputActionValue& Value)
 {
+	if (IgnoreInputAll)
+	{
+		return;
+	}
+
 	bool IsPress = Value.Get<bool>();
 
 	if (IsPress)
 	{
-		if (Speed <= 3000)
+		if (Speed < 3000)
 		{
 			Speed += DeltaSpeed;
 		}
@@ -278,11 +361,16 @@ void AWeek9Character::SpeedUp(const FInputActionValue& Value)
 
 void AWeek9Character::SpeedDown(const FInputActionValue& Value)
 {
+	if (IgnoreInputAll)
+	{
+		return;
+	}
+
 	bool IsPress = Value.Get<bool>();
 
 	if (IsPress)
 	{
-		if (Speed >= 0)
+		if (Speed > 0)
 		{
 			Speed -= DeltaSpeed;
 		}
@@ -293,3 +381,12 @@ void AWeek9Character::SpeedDown(const FInputActionValue& Value)
 	}
 }
 
+double AWeek9Character::GetAngle()
+{
+	return Angle;
+}
+
+float AWeek9Character::GetSpeed()
+{
+	return Speed;
+}

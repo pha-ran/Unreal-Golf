@@ -152,5 +152,23 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Gameplay)
 	float DeltaSpeed;
 
+	UPROPERTY(Replicated)
+	bool IgnoreInputAll;
+
+public:
+	UFUNCTION(Server, Reliable)
+	void ServerNextTurn();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastNextTurn();
+
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	void SetIgnoreInputAll(bool _Ignore);
+
+	double GetAngle();
+
+	float GetSpeed();
+
 };
 
