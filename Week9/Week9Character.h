@@ -106,5 +106,31 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Projectile")
+	TSubclassOf<class AGolfBall> ProjectileClass;
+
+	/** 스윙 딜레이, 단위는 초. 서버 함수의 추가분이 SpawnProjectile 을 입력에 직접 바인딩하지 않게 하는 역할 */
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	float SwingRate;
+
+	/** true 인 경우 스윙하는 프로세스 도중 */
+	bool bIsSwung;
+
+	/** 스윙 시작 함수 */
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+	void StartSwing();
+
+	/** 스윙 종료 함수. 호출되면 플레이어가 StartSwing 을 다시 사용 가능 */
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+	void StopSwing();
+
+	/** 발사체를 스폰하는 서버 함수 */
+	UFUNCTION(Server, Reliable)
+	void SpawnProjectile();
+
+	/** 스폰 사이에 스윙 딜레이를 넣는 타이머 핸들 */
+	FTimerHandle SwingTimer;
+
 };
 

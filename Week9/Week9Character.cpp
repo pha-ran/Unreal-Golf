@@ -7,6 +7,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "GolfBall.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
@@ -49,6 +51,12 @@ AWeek9Character::AWeek9Character()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	//발사체 클래스 초기화
+	ProjectileClass = AGolfBall::StaticClass();
+	//발사 속도 초기화
+	SwingRate = 1.0f;
+	bIsSwung = false;
 }
 
 void AWeek9Character::BeginPlay()
@@ -64,6 +72,36 @@ void AWeek9Character::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+}
+
+void AWeek9Character::StartSwing()
+{
+	if (!bIsSwung)
+	{
+		bIsSwung = true;
+
+		UWorld* World = GetWorld();
+		World->GetTimerManager().SetTimer(SwingTimer, this, &AWeek9Character::StopSwing, SwingRate, false);
+
+		SpawnProjectile();
+	}
+}
+
+void AWeek9Character::StopSwing()
+{
+	bIsSwung = false;
+}
+
+void AWeek9Character::SpawnProjectile_Implementation()
+{
+	FVector spawnLocation = GetActorLocation() + (GetActorRotation().Vector() * 100.0f) + (GetActorUpVector() * 50.0f);
+	FRotator spawnRotation = GetActorRotation();
+
+	FActorSpawnParameters spawnParameters;
+	spawnParameters.Instigator = GetInstigator();
+	spawnParameters.Owner = this;
+
+	AGolfBall* spawnedProjectile = GetWorld()->SpawnActor<AGolfBall>(spawnLocation, spawnRotation, spawnParameters);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -147,7 +185,7 @@ void AWeek9Character::Swing(const FInputActionValue& Value)
 
 	if (IsPress)
 	{
-		UE_LOG(LogTemp, Display, TEXT("#################### Swing ####################"));
+		StartSwing();
 	}
 }
 
