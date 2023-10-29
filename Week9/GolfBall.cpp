@@ -2,6 +2,7 @@
 
 
 #include "GolfBall.h"
+#include "Week9Character.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -51,6 +52,8 @@ AGolfBall::AGolfBall()
 		ProjectileMovementComponent->Friction = 0.1f;
 		ProjectileMovementComponent->BounceVelocityStopSimulatingThreshold = 0.0f;
 	}
+
+	IsStop = false;
 }
 
 // Called when the game starts or when spawned
@@ -65,10 +68,32 @@ void AGolfBall::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (HasAuthority() && GetVelocity().IsNearlyZero() && !IsStop)
+	{
+		NextTurn();
+	}
 }
 
 void AGolfBall::Setup(FVector& Direction, float Speed)
 {
 	ProjectileMovementComponent->Velocity = Direction * (ProjectileMovementComponent->InitialSpeed + Speed);
+}
+
+void AGolfBall::NextTurn()
+{
+	if (HasAuthority())
+	{
+		IsStop = true;
+
+		AWeek9Character* WC = Cast<AWeek9Character>(GetOwner());
+
+		if (WC != nullptr)
+		{
+			WC->SetNextPosition(GetActorLocation());
+			WC->ServerNextTurn();
+		}
+
+		Destroy();
+	}
 }
 

@@ -31,11 +31,16 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	bool IsStop;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// 초기 설정
 	void Setup(FVector& Direction, float Speed);
+
+	// 다음 턴
+	void NextTurn();
 
 };

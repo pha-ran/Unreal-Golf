@@ -155,6 +155,15 @@ protected:
 	UPROPERTY(Replicated)
 	bool IgnoreInputAll;
 
+	UPROPERTY(Replicated)
+	double NextPositionX;
+
+	UPROPERTY(Replicated)
+	double NextPositionY;
+
+	UPROPERTY(Replicated)
+	double NextPositionZ;
+
 public:
 	UFUNCTION(Server, Reliable)
 	void ServerNextTurn();
@@ -165,6 +174,10 @@ public:
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void SetIgnoreInputAll(bool _Ignore);
+
+	void SetNextPosition(FVector _Position);
+
+	FVector GetNextPosition();
 
 	double GetAngle();
 

@@ -75,6 +75,11 @@ AWeek9Character::AWeek9Character()
 
 	// 입력 초기화
 	IgnoreInputAll = true;
+
+	// 시작 위치 초기화
+	NextPositionX = 3836.0f;
+	NextPositionY = -21230.0f;
+	NextPositionZ = 193.0f;
 }
 
 void AWeek9Character::BeginPlay()
@@ -115,6 +120,10 @@ void AWeek9Character::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AWeek9Character, IgnoreInputAll);
+
+	DOREPLIFETIME(AWeek9Character, NextPositionX);
+	DOREPLIFETIME(AWeek9Character, NextPositionY);
+	DOREPLIFETIME(AWeek9Character, NextPositionZ);
 }
 
 void AWeek9Character::ServerNextTurn_Implementation()
@@ -154,7 +163,20 @@ void AWeek9Character::MulticastNextTurn_Implementation()
 
 void AWeek9Character::SetIgnoreInputAll(bool _Ignore)
 {
-	IgnoreInputAll = _Ignore;
+	if (HasAuthority())
+	{
+		IgnoreInputAll = _Ignore;
+	}
+}
+
+void AWeek9Character::SetNextPosition(FVector _Position)
+{
+	if (HasAuthority())
+	{
+		NextPositionX = _Position.X;
+		NextPositionY = _Position.Y;
+		NextPositionZ = _Position.Z;
+	}
 }
 
 void AWeek9Character::SpawnProjectile_Implementation(double _Angle, float _Speed)
@@ -178,8 +200,6 @@ void AWeek9Character::SpawnProjectile_Implementation(double _Angle, float _Speed
 	{
 		FVector Direction = spawnRotation.Vector();
 		spawnedProjectile->Setup(Direction, _Speed);
-
-		ServerNextTurn();
 	}
 }
 
@@ -275,6 +295,8 @@ void AWeek9Character::Swing(const FInputActionValue& Value)
 	if (IsPress)
 	{
 		StartSwing();
+
+		IgnoreInputAll = true;
 	}
 }
 
@@ -379,6 +401,11 @@ void AWeek9Character::SpeedDown(const FInputActionValue& Value)
 			Speed = 0.0f;
 		}
 	}
+}
+
+FVector AWeek9Character::GetNextPosition()
+{
+	return FVector(NextPositionX, NextPositionY, NextPositionZ);
 }
 
 double AWeek9Character::GetAngle()

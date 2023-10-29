@@ -74,6 +74,7 @@ void AWeek9GameMode::NextTurn()
 				{
 					MyGameState->SetCurrentTurn(WPS->GetPlayerTurn());
 					WC->SetIgnoreInputAll(false);
+					WC->SetActorLocation(WC->GetNextPosition());
 					FinishTurn = false;
 					break;
 				}
@@ -90,6 +91,7 @@ void AWeek9GameMode::NextTurn()
 			{
 				MyGameState->SetCurrentTurn(WPS->GetPlayerTurn());
 				WC->SetIgnoreInputAll(false);
+				WC->SetActorLocation(WC->GetNextPosition());
 			}
 		}
 	}
