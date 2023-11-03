@@ -48,6 +48,7 @@ AGolfBall::AGolfBall()
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	CameraBoom->bDoCollisionTest = false;
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -94,6 +95,15 @@ void AGolfBall::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (GetVelocity().IsNearlyZero() && !IsStop)
+	{
+		if (HasAuthority())
+		{
+			//IsStop = true;
+			//Destroy();
+			//UE_LOG(LogTemp, Display, TEXT("#################### Stop ####################"));
+		}
+	}
 }
 
 void AGolfBall::Look(const FInputActionValue& Value)

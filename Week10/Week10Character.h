@@ -61,6 +61,9 @@ protected:
 
 	void OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccessfully);
 
+protected:
+	TSubclassOf<APawn> GolfBallBPClass;
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
