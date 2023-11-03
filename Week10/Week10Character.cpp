@@ -56,6 +56,13 @@ AWeek10Character::AWeek10Character()
 	{
 		GolfBallBPClass = GolfBallBP.Class;
 	}
+
+	static ConstructorHelpers::FClassFinder<APawn> FakeGolfBallBP(TEXT("/Game/ThirdPerson/Blueprints/BP_FakeGolfBall"));
+
+	if (FakeGolfBallBP.Class != NULL)
+	{
+		FakeGolfBallBPClass = FakeGolfBallBP.Class;
+	}
 }
 
 void AWeek10Character::ApiTest()

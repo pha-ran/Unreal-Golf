@@ -64,6 +64,8 @@ protected:
 protected:
 	TSubclassOf<APawn> GolfBallBPClass;
 
+	TSubclassOf<APawn> FakeGolfBallBPClass;
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
