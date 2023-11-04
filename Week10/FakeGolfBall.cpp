@@ -127,6 +127,14 @@ void AFakeGolfBall::SpawnProjectile_Implementation(FRotator _CameraRotation, dou
 	{
 		FVector Direction = SpawnRotation.Vector();
 		SpawnedProjectile->Setup(Direction, _Speed);
+
+		APawn* Pawn = Cast<APawn>(SpawnedProjectile);
+
+		if (Pawn != nullptr)
+		{
+			SetActorHiddenInGame(true);
+			//GetController()->Possess(Pawn);
+		}
 	}
 }
 

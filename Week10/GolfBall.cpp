@@ -10,6 +10,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AGolfBall::AGolfBall()
@@ -24,6 +25,7 @@ AGolfBall::AGolfBall()
 	SphereComponent->InitSphereRadius(7.25f);
 	SphereComponent->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 	RootComponent = SphereComponent;
+	RootComponent->SetIsReplicated(true);
 
 	//비주얼 표현을 담당할 메시 정의
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> DefaultMesh(TEXT("/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere"));
@@ -49,15 +51,18 @@ AGolfBall::AGolfBall()
 	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 	CameraBoom->bDoCollisionTest = false;
+	CameraBoom->SetIsReplicated(true);
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	FollowCamera->SetIsReplicated(true);
 
 	//발사체 무브먼트 컴포넌트 정의
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 	ProjectileMovementComponent->SetUpdatedComponent(SphereComponent);
+	ProjectileMovementComponent->SetIsReplicated(true);
 
 	if (HasAuthority())
 	{
@@ -88,6 +93,17 @@ void AGolfBall::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	if (!HasAuthority())
+	{
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+
+		if (PlayerController != nullptr)
+		{
+			PlayerController->SetControlRotation(GetActorRotation());
+			PlayerController->SetViewTargetWithBlend(this, 0.5f, EViewTargetBlendFunction::VTBlend_Linear, 1.0f, false);
+		}
+	}
 }
 
 // Called every frame
@@ -102,6 +118,23 @@ void AGolfBall::Tick(float DeltaTime)
 			//IsStop = true;
 			//Destroy();
 			//UE_LOG(LogTemp, Display, TEXT("#################### Stop ####################"));
+		}
+	}
+
+	if (!HasAuthority())
+	{
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+
+		if (PlayerController != nullptr)
+		{
+			FRotator PlayerRotation = PlayerController->GetControlRotation();
+			FVector TargetLocation = GetActorLocation();
+			float DistanceToMaintain = 400.0f;
+
+			FVector CameraLocation = TargetLocation - PlayerRotation.Vector() * DistanceToMaintain;
+			FRotator CameraRotation = (TargetLocation - CameraLocation).Rotation();
+
+			FollowCamera->SetWorldLocationAndRotation(CameraLocation, CameraRotation);
 		}
 	}
 }
