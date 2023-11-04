@@ -63,7 +63,7 @@ AGolfBall::AGolfBall()
 	{
 		ProjectileMovementComponent->InitialSpeed = 2000.0f;
 		ProjectileMovementComponent->MaxSpeed = 3000.0f;
-		ProjectileMovementComponent->bRotationFollowsVelocity = true;
+		//ProjectileMovementComponent->bRotationFollowsVelocity = true;
 		ProjectileMovementComponent->ProjectileGravityScale = 1.0f;
 		ProjectileMovementComponent->bShouldBounce = true;
 		ProjectileMovementComponent->bSimulationEnabled = true;
@@ -104,6 +104,11 @@ void AGolfBall::Tick(float DeltaTime)
 			//UE_LOG(LogTemp, Display, TEXT("#################### Stop ####################"));
 		}
 	}
+}
+
+void AGolfBall::Setup(FVector& Direction, float Speed)
+{
+	ProjectileMovementComponent->Velocity = Direction * (ProjectileMovementComponent->InitialSpeed + Speed);
 }
 
 void AGolfBall::Look(const FInputActionValue& Value)

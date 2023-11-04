@@ -62,6 +62,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// 초기 설정
+	void Setup(FVector& Direction, float Speed);
+
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
