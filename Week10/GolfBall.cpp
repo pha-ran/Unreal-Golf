@@ -106,19 +106,22 @@ void AGolfBall::BeginPlay()
 	}
 }
 
+void AGolfBall::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AGolfBall, IsStop);
+}
+
 // Called every frame
 void AGolfBall::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (GetVelocity().IsNearlyZero() && !IsStop)
+	if (HasAuthority() && !IsStop && ProjectileMovementComponent->Velocity.IsNearlyZero())
 	{
-		if (HasAuthority())
-		{
-			//IsStop = true;
-			//Destroy();
-			//UE_LOG(LogTemp, Display, TEXT("#################### Stop ####################"));
-		}
+		IsStop = true;
+		Destroy();
 	}
 
 	if (!HasAuthority())

@@ -56,9 +56,12 @@ protected:
 	virtual void BeginPlay() override;
 
 protected:
+	UPROPERTY(Replicated)
 	bool IsStop;
 
-public:	
+public:
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
